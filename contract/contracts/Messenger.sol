@@ -21,7 +21,7 @@ contract Messenger {
     struct Message {
         address payable sender; // Payable -> トークンのやり取りを可能にする型
         address payable receiver;
-        uint256 depositInWe; // メッセージトークンの量(wei → トークンの料金)を表します。
+        uint256 depositInWei; // メッセージトークンの量(wei → トークンの料金)を表します。
         uint256 timestamp;
         string text;
         bool isPending; // 保留かどうか
@@ -52,7 +52,7 @@ contract Messenger {
     ) public payable {
         // コンソールに表示
         console.log(
-            "%s -> posts text:[%s], token:[%d]",
+            "%s -> posts, text:[%s], token:[%d]",
             msg.sender,
             _text,
             msg.value
@@ -71,8 +71,54 @@ contract Messenger {
         );
     }
 
-    // 関数を呼び出したユーザのアドレス宛のメッセージを全て取得します。
-    // view → 読み込みだけなのでガス代が　かからない。
+    /** メッセージの保留中の状態を解除する */
+    function confirmMessages(uint256 messageIndex) private {
+        // メッセージを取得
+        Message storage message = messageAtAddress[msg.sender][messageIndex];
+
+        // 関数を呼び出したのが、 そのメッセージの レシーバーかどうか。
+        require(
+            msg.sender == message.receiver,
+            // エラー時のメッセージ
+            "Only the receiver can confirmMessage the message"
+        );
+
+        // そのメッセージが保留中かどうか。
+        require(
+            message.isPending == true,
+            "This message has already been confirmed"
+        );
+
+        // 保留中を解除
+        message.isPending = false;
+    }
+
+    /** AVX トークンを送信する */
+    function sendAVX(address payable _to, uint256 _amountInWei) private {
+        // call で 、呼出し手にether を送信する。 Value ＝ 指定するAVXトークン量（Wei）
+        //   -> call関数は「<address型>.call」で利用できます。 (option)
+        //  (bool isSuccess, ) にしないと、右と左で戻り値の数が違うのでエラーになる。
+        (bool isSuccess, ) = (_to).call{value: _amountInWei}("");
+        require(isSuccess, "Failed to withdraw AVAX from contract");
+    }
+
+    /** 受信者が、メッセージと AVXトークン の受け取りを 許可する。 → 受信者に送金 */
+    function accept(uint256 _messageIndex) public {
+        confirmMessages(_messageIndex);
+        Message storage message = messageAtAddress[msg.sender][_messageIndex];
+        sendAVX(message.receiver, message.depositInWei);
+    }
+
+    /** 受信者が、メッセージと AVXトークン の受け取りを 拒否する。 → 送信者に返金 */
+    function unAccept(uint256 _messageIndex) public {
+        confirmMessages(_messageIndex);
+        Message storage message = messageAtAddress[msg.sender][_messageIndex];
+        sendAVX(message.sender, message.depositInWei);
+    }
+
+    /** 関数を呼び出したユーザのアドレス宛のメッセージを全て取得します。
+        view → 読み込みだけなのでガス代が　かからない。
+    */
     function getOwnMessages() public view returns (Message[] memory) {
         return messageAtAddress[msg.sender];
     }
