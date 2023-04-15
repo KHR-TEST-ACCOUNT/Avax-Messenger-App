@@ -43,6 +43,17 @@ async function deployContract() {
 }
 
 describe('Post', () => {
+    // 投稿時にイベントを発行する必要があります
+    it('Should emit an event on post', async () => {
+        const { MessengerContract, otherAccount } = await loadFixture(
+            deployContract
+        );
+        // test
+        await expect(
+            MessengerContract.post('test_text_v' + i++, otherAccount.address)
+        ).to.emit(MessengerContract, 'NewMessage');
+    });
+
     // トークンが送られたかどうかのテスト
     it('Should send the correct amount of tokens', async () => {
         // loadFixture → 引数の関数の戻り値を格納。
@@ -101,6 +112,24 @@ describe('Post', () => {
 });
 
 describe('accept', () => {
+    // 受け入れ時にイベントを発行する必要があります
+    it('Should emit an event on accept', async () => {
+        const { MessengerContract, otherAccount } = await loadFixture(
+            deployContract
+        );
+        const firstIndex = 0;
+        const testDeposit = 10;
+        await MessengerContract.post(
+            'test_text_v' + i++,
+            otherAccount.address,
+            { value: testDeposit }
+        );
+
+        await expect(
+            MessengerContract.connect(otherAccount).accept(firstIndex)
+        ).to.emit(MessengerContract, 'MessageConfirmed');
+    });
+
     // isPending が変わっているかどうか
     it('should isPending has changed', async () => {
         // アカウントを初期化
@@ -172,6 +201,24 @@ describe('accept', () => {
 });
 
 describe('unAccept', () => {
+    // 受け入れ時にイベントを発行する必要があります
+    it('Should emit an event on accept', async () => {
+        const { MessengerContract, otherAccount } = await loadFixture(
+            deployContract
+        );
+        const firstIndex = 0;
+        const testDeposit = 10;
+        await MessengerContract.post(
+            'test_text_v' + i++,
+            otherAccount.address,
+            { value: testDeposit }
+        );
+
+        await expect(
+            MessengerContract.connect(otherAccount).unAccept(firstIndex)
+        ).to.emit(MessengerContract, 'MessageConfirmed');
+    });
+
     // isPending が変わっているかどうか
     it('should isPending has changed', async () => {
         // アカウントを初期化

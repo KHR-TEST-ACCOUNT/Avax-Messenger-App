@@ -14,7 +14,18 @@ contract Messenger {
     // 状態変数のstateを定義 → 読み取って実行を確認できる → Getter なので、State() で呼び出し
     uint256 public state;
 
-    /**
+    event NewMessage(
+        address sender,
+        address receiver,
+        uint256 depositInWei,
+        uint256 timestamp,
+        string text,
+        bool isPending
+    );
+
+    event MessageConfirmed(address receiver, uint256 messageIndex);
+
+    /**s
      * @dev メッセージの送り手、受け手を格納。その他、保留中などのデータを格納
      * 1ETH ＝ 1,000,000,000,000,000,000 wei (10^18)
      */
@@ -69,6 +80,15 @@ contract Messenger {
                 true // 全てのメッセージは投稿直後は保留状態となる
             )
         );
+
+        emit NewMessage(
+            msg.sender,
+            _receiver,
+            msg.value,
+            block.timestamp,
+            _text,
+            true
+        );
     }
 
     /** メッセージの保留中の状態を解除する */
@@ -107,6 +127,8 @@ contract Messenger {
         confirmMessages(_messageIndex);
         Message storage message = messageAtAddress[msg.sender][_messageIndex];
         sendAVX(message.receiver, message.depositInWei);
+        // イベント発火
+        emit MessageConfirmed(message.receiver, _messageIndex);
     }
 
     /** 受信者が、メッセージと AVXトークン の受け取りを 拒否する。 → 送信者に返金 */
@@ -114,6 +136,8 @@ contract Messenger {
         confirmMessages(_messageIndex);
         Message storage message = messageAtAddress[msg.sender][_messageIndex];
         sendAVX(message.sender, message.depositInWei);
+        // イベント発火
+        emit MessageConfirmed(message.receiver, _messageIndex);
     }
 
     /** 関数を呼び出したユーザのアドレス宛のメッセージを全て取得します。
