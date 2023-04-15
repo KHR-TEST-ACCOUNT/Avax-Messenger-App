@@ -8,7 +8,5 @@ typechain-types
 # Hardhat files
 cache
 artifacts
-package.json
-package-lock.json
 tsconfig.json
 hardhat.config.ts
