@@ -4,6 +4,7 @@
     padding: 0 2rem;
 }
 
+/* 中央に縦で並べる */
 .main {
     padding: 4rem 0;
     flex: 1;
@@ -21,6 +22,7 @@
     text-decoration: none;
     border: 1px solid #eaeaea;
     border-radius: 10px;
+    /* ボーダーと色をゆっくりにする */
     transition: color 0.15s ease, border-color 0.15s ease;
     max-width: 300px;
 }
@@ -49,6 +51,10 @@
     line-height: 1.5;
 }
 
+/* ユーザーがシステムに、
+暗色のテーマを持つインターフェイスにしたいと通知したことを示します。
+　　　←→ Light
+ */
 @media (prefers-color-scheme: dark) {
     .card,
     .footer {
