@@ -8,7 +8,7 @@ import { MessageTypes } from '@/hooks/useMessengerContract';
 //   → めちゃくちゃ便利。 異なるファイルで同じCSSクラス名を使用しても、衝突の心配がありません。
 import styles from '/MessageCard.module.css';
 
-type MessageCardProps = {
+type Props = {
     message: MessageTypes;
     onClickAccept: () => void;
     onClickUnAccept: () => void;
@@ -22,13 +22,16 @@ export default function MessageCard({
     message,
     onClickAccept,
     onClickUnAccept,
-}: MessageCardProps) {
+}: Props) {
     // Wei を Ether に変換
     const depositInEther = ethers.formatEther(message.depositInWei);
 
     return (
         <div className={styles.card}>
-            <p className={styles.title}>from {message.sender}</p>
+            {/* 自身を表示 → メッセージの受け手 */}
+            <p className={styles.title}>Hellow {message.receiver}</p>
+            {/* 送信者を表示 */}
+            <p className={styles.title}>Message from {message.sender}</p>
             <p>AVAX: {depositInEther}</p>
             <p className={styles.text}>{message.text}</p>
             {/* Ture なら表示 */}
