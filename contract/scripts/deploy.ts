@@ -1,24 +1,35 @@
-import { ethers } from "hardhat";
+/** @format */
+
+import { ethers } from 'hardhat';
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+    // Wei → TS で Ether に変換する。 コントラクト呼出し時に AVAXトークンを送る量
+    const Amount = 100;
 
-  const lockedAmount = ethers.utils.parseEther("0.001");
+    // デプロイするユーザーを定義 → ユーザーの秘密鍵から、デプロイするユーザーを表示する。
+    // ethers.getSigners() -> hardhat.config.ts で設定した ユーザーを取得する。
+    const [deployer] = await ethers.getSigners();
+    console.log('Deploying contract with the account :', deployer.address);
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+    // コントラクトのインスタンスを作成
+    const Messenger = await ethers.getContractFactory('Messenger');
+    // コントラクトのデプロイされたインスタンス
+    const messenger = await Messenger.deploy({ value: Amount });
+    // コントラクトをデプロイ
+    await messenger.deployed();
 
-  await lock.deployed();
-
-  console.log(
-    `Lock with ${ethers.utils.formatEther(lockedAmount)}ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+    // コントラクトのアドレスを表示
+    console.log('Contract deployed at : ', messenger.address);
+    // コントラクトの所持者の 所持ether を表示。
+    console.log(
+        "Contract's fund is : ",
+        await messenger.provider.getBalance(messenger.address)
+    );
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
+// async/awaitをどこでも使えるようにするために、このパターンを推奨します。
+// そして、エラーを適切に処理します。
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+    console.error(error);
+    process.exitCode = 1;
 });
