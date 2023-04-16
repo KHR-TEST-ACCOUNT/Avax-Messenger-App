@@ -25,6 +25,7 @@ export const useWallet = (): ReturnUseWallet => {
                 console.log('Get Metamask!');
             }
 
+            // ⭐ここで接続
             // Metamaskのアカウント情報を取得 null の可能性があるのでオプショナルにする。
             const accounts = await ethereum?.request({
                 // eth_requestAccounts →
@@ -54,7 +55,7 @@ export const useWallet = (): ReturnUseWallet => {
                 console.log('We have the ethereum object : ', ethereum);
             }
 
-            // アカウントが接続されているかどうかを確認
+            // ⭐ アカウントが接続されているかどうかを確認
             const accounts = ethereum.request({
                 method: 'eth_accounts',
             });

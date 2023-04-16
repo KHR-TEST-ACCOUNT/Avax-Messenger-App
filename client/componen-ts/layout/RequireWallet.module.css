@@ -1,0 +1,18 @@
+/** @format */
+
+.wallet {
+    padding: 0 0 10px 0;
+    border-bottom: 2px solid #eaeaea;
+}
+
+.wallet p {
+    margin: 10px 0;
+}
+
+.title {
+    font-size: 20px;
+}
+
+.connectWalletButton {
+    padding: 5px;
+}

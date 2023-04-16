@@ -4,8 +4,13 @@ import { BigNumberish } from 'ethers';
 import { MessageTypes } from '@/hooks/useMessengerContract';
 import Layout from '@/componen-ts/layout/Layout';
 import MessageCard from '@/componen-ts/card/MessageCard';
+import { useWallet } from '@/hooks/useWallet';
+import RequireWallet from '@/componen-ts/layout/RequireWallet';
 
 export default function SendMessagePage() {
+    // connectWallet の定義。 オブジェクト型で返っている。 onClick の関数のように宣言しているだけ。
+    const { currentAccount, connectWallet } = useWallet();
+
     const message: MessageTypes = {
         sender: '0x~',
         receiver: '0x~',
@@ -27,22 +32,29 @@ export default function SendMessagePage() {
     return (
         // レイアウトの中で、下記の子要素を繰り返し表示している。
         <Layout>
-            {/* List の文だけ繰り返し表示する */}
-            {ownMassgeList.map((message, index) => {
-                return (
-                    <div key={index}>
-                        <MessageCard
-                            message={message}
-                            onClickAccept={() => {
-                                accept(index);
-                            }}
-                            onClickUnAccept={() => {
-                                unAccept(index);
-                            }}
-                        />
-                    </div>
-                );
-            })}
+            {/* Wallet の接続がなければ接続ボタンを表示。あれば 各コンポーネントを表示。 */}
+            {/* Children は勝手に渡るので 引数に加えなくて良い。 */}
+            <RequireWallet
+                currentAccount={currentAccount}
+                connectWallet={connectWallet}
+            >
+                {/* List の文だけ繰り返し表示する */}
+                {ownMassgeList.map((message, index) => {
+                    return (
+                        <div key={index}>
+                            <MessageCard
+                                message={message}
+                                onClickAccept={() => {
+                                    accept(index);
+                                }}
+                                onClickUnAccept={() => {
+                                    unAccept(index);
+                                }}
+                            />
+                        </div>
+                    );
+                })}
+            </RequireWallet>
         </Layout>
     );
 }
