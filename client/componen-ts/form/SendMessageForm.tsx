@@ -52,14 +52,20 @@ export default function SendMessageForm({ sendMessage }: Props) {
                 />
 
                 {/* 送信ボタン */}
-                <button
-                    onClick={() =>
-                        // 下記の引数は Props の呼び出し元の関数の 引数に合わせる。
-                        sendMessage(textValue, receiverAccountValue, tokenValue)
-                    }
-                >
-                    send{' '}
-                </button>
+                <div className={styles.button}>
+                    <button
+                        onClick={() =>
+                            // 下記の引数は Props の呼び出し元の関数の 引数に合わせる。
+                            sendMessage(
+                                textValue,
+                                receiverAccountValue,
+                                tokenValue
+                            )
+                        }
+                    >
+                        send{' '}
+                    </button>
+                </div>
             </div>
         </div>
     );

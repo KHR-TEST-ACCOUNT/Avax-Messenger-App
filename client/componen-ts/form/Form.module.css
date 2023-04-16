@@ -33,6 +33,7 @@
 .form textarea.text {
     border-radius: 10px;
     margin-top: 30px;
+    padding: 5px;
     width: 330px;
     height: 100px;
 }
@@ -40,9 +41,11 @@
 .form input.address {
     width: 330px;
     height: 40px;
+    padding: 5px;
 }
 
 .form input.number {
+    padding: 5px;
     width: 80px;
     height: 40px;
 }
@@ -56,4 +59,8 @@
 .button {
     margin-top: 20px;
     text-align: center;
+}
+
+.button button {
+    padding: 5px;
 }

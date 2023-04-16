@@ -32,10 +32,13 @@ export default function ({ children, home }: Props) {
                 />
             </Head>
             <main>{children}</main>
-            {/* Home 画面ではない場合 → Home に False｜Undifind が設定されているとき */}
+            {/* Home 画面ではない場合 → Home が引数として渡されていない時。 
+                → Undifind｜True 以外。 */}
             {!home && (
                 <div className={styles.backToHome}>
-                    {/* コンテンツを 高速に切り替える Next.js の機能 */}
+                    {/* ホーム（ Index.tsx → / ）に戻る → Next.js の機能
+                        Pages ディレクトリの、 Index.tsx が /（ルート）になる。
+                    */}
                     <Link href='/'>← Back to home</Link>
                 </div>
             )}

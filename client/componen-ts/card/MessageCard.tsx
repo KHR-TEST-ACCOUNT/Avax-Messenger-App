@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 import { MessageTypes } from '@/hooks/useMessengerContract';
 // ~.module.css → Next.js の機能 → CSS のクラス属性を 自動的に重複が無いように定義してくれる。
 //   → めちゃくちゃ便利。 異なるファイルで同じCSSクラス名を使用しても、衝突の心配がありません。
-import styles from '/MessageCard.module.css';
+import styles from '../card/MessageCard.module.css';
 
 type Props = {
     message: MessageTypes;
@@ -37,11 +37,11 @@ export default function MessageCard({
             {/* Ture なら表示 */}
             {message.isPending && (
                 <div className={styles.container}>
-                    <button className={styles.item} onClick={onClickAccept}>
-                        Accept
-                    </button>
                     <button className={styles.item} onClick={onClickUnAccept}>
                         UnAccept
+                    </button>
+                    <button className={styles.item} onClick={onClickAccept}>
+                        Accept
                     </button>
                 </div>
             )}
