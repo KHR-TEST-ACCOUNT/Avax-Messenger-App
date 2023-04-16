@@ -21,7 +21,7 @@ export const useWallet = (): ReturnUseWallet => {
     // ethereum を使ってアカウントに接続する。
     const connectWallet = async () => {
         try {
-            if (ethereum) {
+            if (!ethereum) {
                 console.log('Get Metamask!');
             }
 
@@ -56,7 +56,7 @@ export const useWallet = (): ReturnUseWallet => {
             }
 
             // ⭐ アカウントが接続されているかどうかを確認
-            const accounts = ethereum.request({
+            const accounts = await ethereum.request({
                 method: 'eth_accounts',
             });
 
@@ -79,7 +79,7 @@ export const useWallet = (): ReturnUseWallet => {
 
     // コンポーネントが呼ばれるたびに実行する。
     useEffect(() => {
-        checkIfWalletIsConnected;
+        checkIfWalletIsConnected();
         //  ↓ NextJS の ESlint という静的ソース解析ツールで引っかかることを防ぐためのコメント
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
