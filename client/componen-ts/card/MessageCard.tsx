@@ -3,13 +3,13 @@
 import { ethers } from 'ethers';
 // Hooks import Message types
 //   → ＠で接続できる。→ ＠ ルートディレクトリ的な意味あい。
-import { MessageTypes } from '@/hooks/useMessengerContract';
+import { Message } from '@/hooks/useMessengerContract';
 // ~.module.css → Next.js の機能 → CSS のクラス属性を 自動的に重複が無いように定義してくれる。
 //   → めちゃくちゃ便利。 異なるファイルで同じCSSクラス名を使用しても、衝突の心配がありません。
 import styles from '../card/MessageCard.module.css';
 
 type Props = {
-    message: MessageTypes;
+    message: Message;
     onClickAccept: () => void;
     onClickUnAccept: () => void;
 };

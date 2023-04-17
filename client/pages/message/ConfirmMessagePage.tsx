@@ -1,7 +1,7 @@
 /** @format */
 
 import { BigNumberish } from 'ethers';
-import { MessageTypes } from '@/hooks/useMessengerContract';
+import { Message } from '@/hooks/useMessengerContract';
 import Layout from '@/componen-ts/layout/Layout';
 import MessageCard from '@/componen-ts/card/MessageCard';
 import { useWallet } from '@/hooks/useWallet';
@@ -11,7 +11,7 @@ export default function SendMessagePage() {
     // connectWallet の定義。 オブジェクト型で返っている。 onClick の関数のように宣言しているだけ。
     const { currentAccount, connectWallet } = useWallet();
 
-    const message: MessageTypes = {
+    const message: Message = {
         sender: '0x~',
         receiver: '0x~',
         depositInWei: '1000000000000000000' as BigNumberish,
@@ -21,7 +21,7 @@ export default function SendMessagePage() {
     };
 
     // for test
-    let ownMassgeList: MessageTypes[] = [message, message];
+    let ownMassgeList: Message[] = [message, message];
 
     // 承認する
     function accept(messageIndex: number) {}
