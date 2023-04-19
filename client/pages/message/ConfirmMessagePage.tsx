@@ -5,23 +5,18 @@ import { Message } from '@/hooks/useMessengerContract';
 import Layout from '@/componen-ts/layout/Layout';
 import MessageCard from '@/componen-ts/card/MessageCard';
 import { useWallet } from '@/hooks/useWallet';
+import { useMessengerContract } from '@/hooks/useMessengerContract';
+
 import RequireWallet from '@/componen-ts/layout/RequireWallet';
 
 export default function SendMessagePage() {
     // connectWallet の定義。 オブジェクト型で返っている。 onClick の関数のように宣言しているだけ。
     const { currentAccount, connectWallet } = useWallet();
 
-    const message: Message = {
-        sender: '0x~',
-        receiver: '0x~',
-        depositInWei: '1000000000000000000' as BigNumberish,
-        text: 'message',
-        isPending: true,
-        timestamp: new Date(1),
-    };
-
-    // for test
-    let ownMassgeList: Message[] = [message, message];
+    // Message を取得する。 → 独自Hooks → processing などが変わるたびに再レンダリングする。
+    const { processing, ownMessages } = useMessengerContract({
+        currentAccount,
+    });
 
     // 承認する
     function accept(messageIndex: number) {}
@@ -38,8 +33,11 @@ export default function SendMessagePage() {
                 currentAccount={currentAccount}
                 connectWallet={connectWallet}
             >
+                {/* processing が True なら、その間だけ表示 */}
+                {processing && <div>processing...</div>}
+
                 {/* List の文だけ繰り返し表示する */}
-                {ownMassgeList.map((message, index) => {
+                {ownMessages.map((message, index) => {
                     return (
                         <div key={index}>
                             <MessageCard

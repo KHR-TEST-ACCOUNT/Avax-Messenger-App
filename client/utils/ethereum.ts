@@ -1,13 +1,15 @@
 /** @format */
 
 // Metamask の拡張機能のプロバイダーと通信する
-import { BaseProvider } from '@metamask/providers';
+import { MetaMaskInpageProvider } from '@metamask/providers';
+// import { BaseProvider } from '@metamask/providers';
 
 // Window に ether を追加。 Ether はMeatamask の型にして取得。
 //   → 取得時に、Window オブジェクトを通じて 署名を求めたりしてくれる。
 declare global {
     interface Window {
-        ethereum?: BaseProvider;
+        ethereum?: MetaMaskInpageProvider;
+        // ethereum?: BaseProvider;
     }
 }
 
@@ -29,14 +31,15 @@ declare global {
  *
  * @returns Ethereum
  */
-export const getEtherum = (): BaseProvider | null => {
+export const getEtherum = (): MetaMaskInpageProvider | null => {
+    // export const getEtherum = (): BaseProvider | null => {
     if (
         typeof window !== 'undefined' &&
         typeof window.ethereum !== 'undefined'
     ) {
         // window オブジェクトから Metamask の Ether情報 を取り出す。
-        // ether.jsのWeb3Providerに渡す際はMetaMaskInpageProviderだとエラーになる。
-        // Web3ProviderはEIP-1193準拠のものを受け取るようにできているので、BaseProviderを使用する。
+        // ether.jsのWeb3Providerに渡す際は MetaMaskInpageProvider だとエラーになる。
+        // Web3ProviderはEIP-1193準拠のものを受け取るようにできているので、 BaseProvider を使用する。
         // https://github.com/MetaMask/providers
         // const { ethereum } = window as unknown as { ethereum: BaseProvider };
         const { ethereum } = window;
