@@ -29,11 +29,19 @@ export default function MessageCard({
     return (
         <div className={styles.card}>
             {/* 自身を表示 → メッセージの受け手 */}
-            <p className={styles.title}>Hellow {message.receiver}</p>
+            <p className={styles.title}>Hellow : {message.receiver}</p>
+            <br />
             {/* 送信者を表示 */}
-            <p className={styles.title}>Message from {message.sender}</p>
+            <p className={styles.title}>Message from : {message.sender}</p>
+            <br />
+            {/* AVAX を表示 */}
             <p>AVAX: {depositInEther}</p>
-            <p className={styles.text}>{message.text}</p>
+            {/* message を表示 */}
+            <p className={styles.text}>
+                Content : <br />
+                {message.text}
+            </p>
+            <br />
             {/* Ture なら表示 */}
             {message.isPending && (
                 <div className={styles.container}>

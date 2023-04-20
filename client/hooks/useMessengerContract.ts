@@ -3,7 +3,7 @@
 import { BigNumberish, ethers, Contract } from 'ethers';
 import abi from '@/utils/Messenger.json';
 import { getEtherum } from '@/utils/ethereum';
-import { Messenger as MessengerType } from '@/typechain-types';
+// import { Messenger as MessengerType } from '@/typechain-types';
 import { useEffect, useState } from 'react';
 
 /** 独自の Hooks で Type を定義 */
@@ -29,6 +29,8 @@ type ReturnUseMessengerContract = {
     ownMessages: Message[];
     // 親で呼出して、子で処理する。
     sendMessage: (props: SendMessageProps) => void;
+    accept: (index: BigInt) => void;
+    unAccept: (index: BigInt) => void;
 };
 
 type UseMessengerContractPsops = {
@@ -71,10 +73,14 @@ export const useMessengerContract = ({
      *  コントラクトを取得する → ブロックチェーンから読み取るのでAsync
      */
     async function getMessengerContract() {
+        // コントラとを初期化
+        let MessengerContract;
         try {
             // MetaMaskInpageProvider の window.Ethereum があれば実行
             if (ethereum) {
                 //  ethers.BrowserProvider → Metamask を介して、ブロックのノードに接続する。
+                //   → ネットワークは介さないのでBrowser のプロバイダーを使用する。
+                //  参考 → https://docs.ethers.org/v6/getting-started/#starting-connecting
                 const provider = new ethers.BrowserProvider(ethereum);
 
                 // signerは,ユーザーのウォレットアドレスを抽象化したもの
@@ -86,11 +92,11 @@ export const useMessengerContract = ({
 
                 // コントラクトに接続 → コントラクトアドレス、Abi、provider,もしくはsigner を渡す。
                 //  Signer の場合、コントラクトへの読み書きが許可される。  Provider は読み取り。
-                const MessengerContract = new ethers.Contract(
+                MessengerContract = new Contract(
                     contractAddress,
                     contractAbi,
                     signer
-                );
+                ) as Contract;
 
                 // コントラクトをセット
                 setMessengerContract(MessengerContract);
@@ -98,12 +104,16 @@ export const useMessengerContract = ({
                 // MetaMaskInpageProvider の window.Ethereum が無い時は失敗
             } else {
                 console.log("Ethereum object doesn't exist!");
+                return null;
             }
 
             // エラー処理
         } catch (error) {
             console.log(error);
         }
+
+        // コントラクトを返す。
+        return MessengerContract;
     }
 
     /**
@@ -111,29 +121,34 @@ export const useMessengerContract = ({
      * @returns 自分宛てのメッセージ
      */
     async function getOwnMessages() {
+        const MessengerContract = await getMessengerContract();
         // messengerContract が存在すれば リターン
-        //  ❓ ここの記述はわからない。
-        if (!messengerContract) return;
+        //  ❓ ここの記述はわからない。 → Undefined対策？
+        if (!MessengerContract) return;
+        // if (!messengerContract) return;
 
         // 例外処理
         try {
             // getOwnMessages() をコントラクトから呼出し。
-            const messageList = await messengerContract.getOwnMessages();
+            const messageList = await MessengerContract.getOwnMessages();
+            // const messageList = await messengerContract.getOwnMessages();
 
             // メッセージ一覧のオブジェクトを Json 形式で返す
             // フロントエンドで保持するデータ型に変換
-            const messageCleaned = messageList.map((message: Message) => {
-                return {
-                    // message. → コントラクトの Message で定義した変数名
-                    sender: message.sender,
-                    receiver: message.receiver,
-                    depositInWei: message.depositInWei,
-                    // Timestamp で格納されているので、Date型にする。 *1000 で、細かい単位を切り捨てる。
-                    timestamp: new Date(message.timestamp.getTime() * 1000),
-                    text: message.text,
-                    isPending: message.isPending,
-                };
-            });
+            const messageCleaned: Message[] = messageList.map(
+                (message: Message) => {
+                    return {
+                        // message. → コントラクトの Message で定義した変数名
+                        sender: message.sender,
+                        receiver: message.receiver,
+                        depositInWei: message.depositInWei,
+                        // Timestamp で格納されているので、Date型にする。 *1000 で、細かい単位を切り捨てる。
+                        timestamp: new Date(Number(message.timestamp) * 1000),
+                        text: message.text,
+                        isPending: message.isPending,
+                    };
+                }
+            );
 
             // 自分宛てのメッセージを状態変数にセット
             setOwnMessages(messageCleaned);
@@ -150,7 +165,11 @@ export const useMessengerContract = ({
         receiver,
         tokenInEther,
     }: SendMessageProps) {
-        if (!messengerContract) return;
+        // ⭐後で消す。
+        const MessengerContract = await getMessengerContract();
+
+        // if (!messengerContract) return;
+        if (!MessengerContract) return;
         try {
             // Ethereum を Wei に変換する。 → UIではトークンの単位はether
             const tokenInWei = ethers.parseEther(tokenInEther);
@@ -163,7 +182,8 @@ export const useMessengerContract = ({
              * 送金手数料の支払いが無限に発生する（「ガス量」が無限に大きくなる）ことを防ぐためのものです。
              *  最大送金手数料はガス価格 × ガスリミットで計算されます。
              */
-            const txn = await messengerContract.post(text, receiver, {
+            // const txn = await messengerContract.post(text, receiver, {
+            const txn = await MessengerContract.post(text, receiver, {
                 gasLimit: 300000,
                 value: tokenInWei,
             });
@@ -193,12 +213,36 @@ export const useMessengerContract = ({
         }
     }
 
+    async function accept(index: BigInt) {
+        const MessengerContract = await getMessengerContract();
+        if (!MessengerContract) return;
+
+        try {
+            MessengerContract.accept(index);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async function unAccept(index: BigInt) {
+        const MessengerContract = await getMessengerContract();
+        if (!MessengerContract) return;
+
+        try {
+            MessengerContract.unAccept(index);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     /**
      *  currentAccount, ethereum に変更があったら実行して再レンダーする。
      */
     useEffect(() => {
-        getMessengerContract;
-        getOwnMessages;
+        new Promise(getMessengerContract);
+        new Promise(getOwnMessages);
+        // getOwnMessages;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentAccount, ethereum]);
 
     /**
@@ -228,7 +272,7 @@ export const useMessengerContract = ({
                         receiver: receiver,
                         depositInWei: depositInWei,
                         // Timestamp で格納されているので、Date型にする。 *1000 で、細かい単位を切り捨てる。
-                        timestamp: new Date(timestamp.getTime() * 1000),
+                        timestamp: new Date(Number(timestamp) * 1000),
                         text: text,
                         isPending: isPending,
                     },
@@ -256,5 +300,7 @@ export const useMessengerContract = ({
         processing,
         ownMessages,
         sendMessage,
+        accept,
+        unAccept,
     };
 };

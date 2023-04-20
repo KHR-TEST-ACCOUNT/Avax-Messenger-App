@@ -1,6 +1,6 @@
 /** @format */
 
-import { BigNumberish } from 'ethers';
+import { BigNumberish, getBigInt, getNumber } from 'ethers';
 import { Message } from '@/hooks/useMessengerContract';
 import Layout from '@/componen-ts/layout/Layout';
 import MessageCard from '@/componen-ts/card/MessageCard';
@@ -14,15 +14,9 @@ export default function SendMessagePage() {
     const { currentAccount, connectWallet } = useWallet();
 
     // Message を取得する。 → 独自Hooks → processing などが変わるたびに再レンダリングする。
-    const { processing, ownMessages } = useMessengerContract({
+    const { processing, ownMessages, accept, unAccept } = useMessengerContract({
         currentAccount,
     });
-
-    // 承認する
-    function accept(messageIndex: number) {}
-
-    // 否認する
-    function unAccept(messageIndex: number) {}
 
     return (
         // レイアウトの中で、下記の子要素を繰り返し表示している。
@@ -37,16 +31,16 @@ export default function SendMessagePage() {
                 {processing && <div>processing...</div>}
 
                 {/* List の文だけ繰り返し表示する */}
-                {ownMessages.map((message, index) => {
+                {ownMessages.map((message, index: number) => {
                     return (
                         <div key={index}>
                             <MessageCard
                                 message={message}
                                 onClickAccept={() => {
-                                    accept(index);
+                                    accept(BigInt(index));
                                 }}
                                 onClickUnAccept={() => {
-                                    unAccept(index);
+                                    unAccept(BigInt(index));
                                 }}
                             />
                         </div>

@@ -18,15 +18,15 @@ export default function SendMessagePage() {
 
     return (
         <Layout>
-            {processing ? (
-                <div>processing...</div>
-            ) : (
-                // Wallet の接続がなければ接続ボタンを表示。あれば 各コンポーネントを表示。
-                // Children は勝手に渡るので 引数に加えなくて良い。
-                <RequireWallet
-                    currentAccount={currentAccount}
-                    connectWallet={connectWallet}
-                >
+            <RequireWallet
+                currentAccount={currentAccount}
+                connectWallet={connectWallet}
+            >
+                {processing ? (
+                    <div>processing...</div>
+                ) : (
+                    // Wallet の接続がなければ接続ボタンを表示。あれば 各コンポーネントを表示。
+                    // Children は勝手に渡るので 引数に加えなくて良い。
                     <SendMessageForm
                         // SendMessageForm の sendMessage
                         sendMessage={(
@@ -38,8 +38,8 @@ export default function SendMessagePage() {
                             sendMessage({ text, receiver, tokenInEther });
                         }}
                     />
-                </RequireWallet>
-            )}
+                )}
+            </RequireWallet>
         </Layout>
     );
 }
