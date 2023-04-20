@@ -22,6 +22,7 @@ export const useWallet = (): ReturnUseWallet => {
     const connectWallet = async () => {
         try {
             if (!ethereum) {
+                alert('Get Metamask!');
                 console.log('Get Metamask!');
             }
 
@@ -41,6 +42,7 @@ export const useWallet = (): ReturnUseWallet => {
             console.log('Connected : ', accounts[0]);
             setCurrentAccount(accounts[0]);
         } catch (error) {
+            alert('Error occurred! Check the console. ');
             console.log(error);
         }
     };
@@ -70,9 +72,11 @@ export const useWallet = (): ReturnUseWallet => {
                 setCurrentAccount(account);
             } else {
                 // Ether はあるけどアカウントがない。
+                alert('No authorized account found. ');
                 console.log('No authorized account found');
             }
         } catch (error) {
+            alert('Error occurred! Check the console. ');
             console.log(error);
         }
     };
