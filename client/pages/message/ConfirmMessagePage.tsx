@@ -12,9 +12,10 @@ export default function SendMessagePage() {
     const { currentAccount, connectWallet } = useWallet();
 
     // Message を取得する。 → 独自Hooks → processing などが変わるたびに再レンダリングする。
-    const { processing, ownMessages, accept, unAccept } = useMessengerContract({
-        currentAccount,
-    });
+    const { processing, ownMessages, acceptMessage, unAcceptMessage } =
+        useMessengerContract({
+            currentAccount,
+        });
 
     return (
         // レイアウトの中で、下記の子要素を繰り返し表示している。
@@ -35,10 +36,10 @@ export default function SendMessagePage() {
                             <MessageCard
                                 message={message}
                                 onClickAccept={() => {
-                                    accept(BigInt(index));
+                                    acceptMessage(BigInt(index));
                                 }}
                                 onClickUnAccept={() => {
-                                    unAccept(BigInt(index));
+                                    unAcceptMessage(BigInt(index));
                                 }}
                             />
                         </div>

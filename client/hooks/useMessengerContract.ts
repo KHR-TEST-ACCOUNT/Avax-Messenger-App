@@ -29,8 +29,8 @@ type ReturnUseMessengerContract = {
     ownMessages: Message[];
     // 親で呼出して、子で処理する。
     sendMessage: (props: SendMessageProps) => void;
-    accept: (index: BigInt) => void;
-    unAccept: (index: BigInt) => void;
+    acceptMessage: (index: BigInt) => void;
+    unAcceptMessage: (index: BigInt) => void;
 };
 
 type UseMessengerContractPsops = {
@@ -100,15 +100,18 @@ export const useMessengerContract = ({
 
                 // コントラクトをセット
                 setMessengerContract(MessengerContract);
+                console.log('getContract ###########', messengerContract);
 
                 // MetaMaskInpageProvider の window.Ethereum が無い時は失敗
             } else {
+                alert('Error occurred! Check the console. ');
                 console.log("Ethereum object doesn't exist!");
                 return null;
             }
 
             // エラー処理
         } catch (error) {
+            alert('Error occurred! Check the console. ');
             console.log(error);
         }
 
@@ -122,10 +125,13 @@ export const useMessengerContract = ({
      */
     async function getOwnMessages() {
         const MessengerContract = await getMessengerContract();
+
         // messengerContract が存在すれば リターン
         //  ❓ ここの記述はわからない。 → Undefined対策？
         if (!MessengerContract) return;
         // if (!messengerContract) return;
+        setMessengerContract(MessengerContract);
+        console.log('messengerContract ##################', messengerContract);
 
         // 例外処理
         try {
@@ -153,6 +159,7 @@ export const useMessengerContract = ({
             // 自分宛てのメッセージを状態変数にセット
             setOwnMessages(messageCleaned);
         } catch (error) {
+            alert('Error occurred! Check the console. ');
             console.log(error);
         }
     }
@@ -170,6 +177,9 @@ export const useMessengerContract = ({
 
         // if (!messengerContract) return;
         if (!MessengerContract) return;
+        await setMessengerContract(MessengerContract);
+        console.log('messengerContract ###################', messengerContract);
+
         try {
             // Ethereum を Wei に変換する。 → UIではトークンの単位はether
             const tokenInWei = ethers.parseEther(tokenInEther);
@@ -209,28 +219,69 @@ export const useMessengerContract = ({
 
             // エラー処理
         } catch (error) {
+            alert('Error occurred! Check the console. ');
             console.log(error);
         }
     }
 
-    async function accept(index: BigInt) {
+    async function acceptMessage(index: BigInt) {
         const MessengerContract = await getMessengerContract();
         if (!MessengerContract) return;
 
         try {
-            MessengerContract.accept(index);
+            console.log('call accept with index [%d]', index);
+
+            // コントラクトで承認を実行
+            const txn = await MessengerContract.accept(index, {
+                // 永遠にトランザクションが実行されてガス代が無限に増えるのを防ぐ
+                gasLimit: 300000,
+            });
+
+            // トランザクション実行前のハッシュ
+            console.log('... Processing ... ', txn.hash);
+
+            // プロセスをTrue に変えて、コントラクトが実行されたことを状態変数に格納する。
+            setProcessing(true);
+
+            // トランザクション実行後のハッシュ を表示
+            await txn.wait();
+            console.log('... Done ... ', txn.hash);
+
+            // プロセスをFalse にする。 → どこでエラーが起きたのかがわかりやすくなる。
+            setProcessing(false);
         } catch (error) {
+            alert('Error occurred! Check the console. ');
             console.log(error);
         }
     }
 
-    async function unAccept(index: BigInt) {
+    async function unAcceptMessage(index: BigInt) {
         const MessengerContract = await getMessengerContract();
+
         if (!MessengerContract) return;
 
         try {
-            MessengerContract.unAccept(index);
+            console.log('call accept with index [%d]', index);
+
+            // 否認を実行
+            const txn = await MessengerContract.unAccept(index, {
+                gasLimit: 300000,
+            });
+
+            // トランザクション実行前のハッシュ
+            console.log('... Processing ... ', txn.hash);
+
+            // プロセスをTrue に変えて、コントラクトが実行されたことを状態変数に格納する。
+            setProcessing(true);
+
+            // トランザクション実行後のハッシュ を表示
+            await txn.wait();
+            console.log('... Done ... ', txn.hash);
+
+            // プロセスをFalse にする。 → どこでエラーが起きたのかがわかりやすくなる。
+            setProcessing(false);
         } catch (error) {
+            alert('Error occurred! Check the console. ');
             console.log(error);
         }
     }
@@ -280,10 +331,28 @@ export const useMessengerContract = ({
             }
         }
 
+        // イベント処理 → メッセージが承認されていれば、保留中を OFF にする → UI で表示しないようにする。
+        // 引数 → コントラクトのイベントから渡される。 → event MessageConfirmed(address receiver, uint256 messageIndex);
+        function onMessageConfirmed(receiver: string, messageIndex: number) {
+            console.log(
+                'MessageConfirmed ... index :[%d],  receiver : [%s]',
+                receiver,
+                messageIndex
+            );
+            // イベント処理されたインデックスのメッセージの 保留中 を False にして、UIに再レンダリングする。
+            if (receiver.toLocaleLowerCase() === currentAccount) {
+                setOwnMessages((prevMessages: Message[]) => {
+                    prevMessages[messageIndex].isPending = false;
+                    return [...prevMessages];
+                });
+            }
+        }
+
         // コントラクトが Null でない場合、イベントリスナを登録する。
         if (messengerContract) {
             // Contract.on("イベント名", イベントリスナ)とすることでイベントリスナを登録することができます。
             messengerContract.on('NewMessage', onNewMessage);
+            messengerContract.on('MessageConfirmed', onMessageConfirmed);
         }
 
         // 登録が繰り返されることを防ぐため, クリーンアップ関数として解除を行っています。
@@ -291,6 +360,7 @@ export const useMessengerContract = ({
         return () => {
             if (messengerContract) {
                 messengerContract.off('NewMessage', onNewMessage);
+                messengerContract.off('MessageConfirmed', onMessageConfirmed);
             }
         };
     }, [messengerContract]);
@@ -300,7 +370,7 @@ export const useMessengerContract = ({
         processing,
         ownMessages,
         sendMessage,
-        accept,
-        unAccept,
+        acceptMessage,
+        unAcceptMessage,
     };
 };

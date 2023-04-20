@@ -42,7 +42,7 @@ export default function MessageCard({
                 {message.text}
             </p>
             <br />
-            {/* Ture なら表示 */}
+            {/* Ture なら表示 → コンストラクトのイベントが呼ばれて False になれば、表示しない。 → 動的に変更（再レンダリング）する。 */}
             {message.isPending && (
                 <div className={styles.container}>
                     <button className={styles.item} onClick={onClickUnAccept}>
