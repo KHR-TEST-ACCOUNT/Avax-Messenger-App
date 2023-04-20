@@ -1,7 +1,5 @@
 /** @format */
 
-import { BigNumberish, getBigInt, getNumber } from 'ethers';
-import { Message } from '@/hooks/useMessengerContract';
 import Layout from '@/componen-ts/layout/Layout';
 import MessageCard from '@/componen-ts/card/MessageCard';
 import { useWallet } from '@/hooks/useWallet';
